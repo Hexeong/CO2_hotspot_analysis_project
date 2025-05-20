@@ -1,0 +1,143 @@
+version: "3"
+
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+      - HADOOP_CONF_DIR=/hadoop-config
+    ports:
+      - 9870:9870 # 웹 UI
+      - 9000:9000 # HDFS 클라이언트 접근 포트
+      - 8020:8020 # HDFS 데이터 접근 포트
+    volumes:
+      - ./config:/hadoop-config
+      - ../dataset/parsed_logs_csv/ag01/test:/hadoop/warehouse/dataset  # 로컬 dataset 폴더를 HDFS 경로로 매핑
+      - ./scripts/wait-for-it.sh:/wait-for-it.sh
+      - ./scripts/init-hdfs.sh:/init-hdfs.sh
+    networks:
+      - hadoop
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+      - HADOOP_CONF_DIR=/hadoop-config
+    volumes:
+      - ./config:/hadoop-config
+    networks:
+      - hadoop
+
+  datanode2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+      - HADOOP_CONF_DIR=/hadoop-config
+    volumes:
+      - ./config:/hadoop-config
+    networks:
+      - hadoop
+
+  metastore-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: hive
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    ports:
+      - "5432:5432"
+    networks:
+      - hadoop
+
+  hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    command: ["/bin/bash", "/opt/start-hive-metastore.sh"]
+    environment:
+      - HIVE_CORE_CONF_hadoop_proxyuser_hive_hosts=*
+      - HIVE_CORE_CONF_hadoop_proxyuser_hive_groups=*
+      - HIVE_CONF_DIR=/etc/hive  # hive-site.xml이 있는 경로
+      - HADOOP_CONF_DIR=/hadoop-config
+    ports:
+      - 9083:9083
+    depends_on:
+      - namenode
+      - metastore-db
+    volumes:
+      - ./hive:/etc/hive
+      - ./config:/hadoop-config
+      - ./scripts/wait-for-it.sh:/opt/wait-for-it.sh  # wait-for-it.sh 복사
+      - ./scripts/start-hive-metastore.sh:/opt/start-hive-metastore.sh
+    networks:
+      - hadoop
+
+  hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    command: ["/opt/init-and-start-hive.sh"]
+    environment:
+      - HIVE_CONF_DIR=/etc/hive  # hive-site.xml이 있는 경로
+      - HADOOP_CONF_DIR=/hadoop-config
+    ports:
+      - 10000:10000
+    depends_on:
+      - namenode
+      - hive-metastore
+      - metastore-db
+    volumes:
+      - ./hive:/etc/hive
+      - ./config:/hadoop-config
+      - ./scripts/wait-for-it.sh:/opt/wait-for-it.sh
+      - ./scripts/init-and-start-hive.sh:/opt/init-and-start-hive.sh
+    networks:
+      - hadoop
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: datamart
+      MYSQL_USER: datamart_user
+      MYSQL_PASSWORD: datamart_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - hadoop
+
+  # Presto Coordinator (with Hive + MySQL catalog)
+  presto-coordinator:
+    image: prestodb/presto:latest
+    # command: ["/bin/bash", "-c", "/install-and-run-presto.sh"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./presto/catalog/hive.properties:/opt/presto-server/etc/catalog/hive.properties
+      - ./presto/catalog/mysql.properties:/opt/presto-server/etc/catalog/mysql.properties
+      - ./presto/config.properties:/opt/presto-server/etc/config.properties
+      - ./config:/opt/presto-server/etc/hadoop
+      - ./presto/sql:/sql
+    networks:
+      - hadoop
+    depends_on:
+      - hive-metastore
+      - hive-server
+      - mysql
+
+networks:
+  hadoop:
+    driver: bridge
+
+  # superset:
+  #   image: apache/superset
+  #   ports:
+  #     - "8088:8088"
+  #   environment:
+  #     SUPERSET_SECRET_KEY: "qwer1234"
+  #     SQLALCHEMY_DATABASE_URI: "mysql://superset:qwer1234@mysql/datamart"
+  #   volumes:
+  #     - ./superset:/app/superset_home
+  #   command: ["/bin/sh", "-c", "/app/superset_home/docker-init.sh"]
+  #   depends_on:
+  #     - mysql
+  #   networks:
+  #     - hadoop
