@@ -123,21 +123,24 @@ services:
       - hive-server
       - mysql
 
+  superset:
+    image: apache/superset:latest
+    container_name: superset
+    ports:
+      - "8088:8088"
+    environment:
+      - SUPERSET_SECRET_KEY=supersecretkey
+    volumes:
+      - ./scripts/init-superset.sh:/app/init-superset.sh
+      - ./superset/import_datasources.yaml:/app/import_datasources.yaml
+    depends_on:
+      - presto-coordinator
+      - mysql
+    networks:
+      - hadoop
+    user: root # mysqlclient 설치를 진행하기 위한 root 권한으로의 실행
+    command: ["bash", "/app/init-superset.sh"]
+
 networks:
   hadoop:
     driver: bridge
-
-  # superset:
-  #   image: apache/superset
-  #   ports:
-  #     - "8088:8088"
-  #   environment:
-  #     SUPERSET_SECRET_KEY: "qwer1234"
-  #     SQLALCHEMY_DATABASE_URI: "mysql://superset:qwer1234@mysql/datamart"
-  #   volumes:
-  #     - ./superset:/app/superset_home
-  #   command: ["/bin/sh", "-c", "/app/superset_home/docker-init.sh"]
-  #   depends_on:
-  #     - mysql
-  #   networks:
-  #     - hadoop

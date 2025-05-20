@@ -1,0 +1,14 @@
+databases:
+  - database_name: presto_hive
+    sqlalchemy_uri: presto://superset@presto-coordinator:8080/hive/default
+    allow_dml: true
+    allow_file_upload: true
+    allow_ctas: true
+    allow_cvas: true
+
+  - database_name: datamart_mysql
+    sqlalchemy_uri: mysql://datamart_user:datamart_pass@mysql:3306/datamart
+    allow_dml: true
+    allow_file_upload: true
+    allow_ctas: true
+    allow_cvas: true
