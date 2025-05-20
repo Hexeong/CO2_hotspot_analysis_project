@@ -1,2 +1,2 @@
-./dataset
-./hadoop_cluster/mysql_data
+/dataset/
+/hadoop_cluster/mysql_data/
