@@ -1,4 +1,7 @@
-# 탄소배출 핫스팟 분석용 Hadoop 클러스터
+# CO2_reduce_project
+탄소중립 아카데미 4기 - 탄소 고배출 핫스팟 분석 프로젝트 레포지토리입니다.
+
+# hadoop_cluster dir - 탄소배출 핫스팟 분석용 Hadoop 클러스터
 차량 이동 데이터를 기반으로 경도, 위도별 차량 이동량을 집계하기 위한 빅데이터 처리용 클러스터 입니다.
 
 ## Framework/Library
@@ -23,7 +26,6 @@
 
 ### 📈 Visualization
 ![Superset](https://img.shields.io/badge/mysql-20A6C9.svg?style=for-the-badge&logo=apachesuperset&logoColor=white)
-
 
 
 ## 분석방법
