@@ -25,7 +25,7 @@
 ![MySQL](https://img.shields.io/badge/mysql-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white)
 
 ### 📈 Visualization
-![Superset](https://img.shields.io/badge/mysql-20A6C9.svg?style=for-the-badge&logo=apachesuperset&logoColor=white)
+![Superset](https://img.shields.io/badge/superset-20A6C9.svg?style=for-the-badge&logo=apachesuperset&logoColor=white)
 
 
 ## 분석방법
