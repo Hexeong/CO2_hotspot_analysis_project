@@ -101,19 +101,20 @@ services:
       - "3306:3306"
     volumes:
       - ./mysql_data:/var/lib/mysql
+      - ./presto/sql/init-mysql.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - hadoop
 
   # Presto Coordinator (with Hive + MySQL catalog)
   presto-coordinator:
     image: prestodb/presto:latest
-    # command: ["/bin/bash", "-c", "/install-and-run-presto.sh"]
     ports:
       - "8080:8080"
     volumes:
       - ./presto/catalog/hive.properties:/opt/presto-server/etc/catalog/hive.properties
       - ./presto/catalog/mysql.properties:/opt/presto-server/etc/catalog/mysql.properties
       - ./presto/config.properties:/opt/presto-server/etc/config.properties
+      - ./presto/jvm.config:/opt/presto-server/etc/jvm.config
       - ./config:/opt/presto-server/etc/hadoop
       - ./presto/sql:/sql
     networks:
@@ -122,6 +123,7 @@ services:
       - hive-metastore
       - hive-server
       - mysql
+    mem_limit: 4g
 
   superset:
     image: apache/superset:latest
@@ -136,10 +138,10 @@ services:
     depends_on:
       - presto-coordinator
       - mysql
-    networks:
-      - hadoop
     user: root # mysqlclient 설치를 진행하기 위한 root 권한으로의 실행
     command: ["bash", "/app/init-superset.sh"]
+    networks:
+      - hadoop
 
 networks:
   hadoop:
