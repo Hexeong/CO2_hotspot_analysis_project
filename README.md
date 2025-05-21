@@ -49,7 +49,7 @@
 # exit
 
 // 만약, .sql 파일로 실행시키고자 한다면 다음과 같은 명령어 실행
-# presto-cli --file /sql/daily_hotspot_by_position.sql --catalog hive --schema default
+# presto-cli --file /sql/daily_hotspot_by_position.sql
 -> prestodb/presto는 /opt/persto 폴더를 default 설정으로 사용하지 않고, /opt/presto-server
 -> 폴더를 사용하는 문제가 있었지만, iamage docs를 찾아본 다음 해결
 
