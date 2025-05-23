@@ -107,7 +107,7 @@ services:
 
   # Presto Coordinator (with Hive + MySQL catalog)
   presto-coordinator:
-    image: prestodb/presto:latest
+    image: prestodb/presto:0.292
     ports:
       - "8080:8080"
     volumes:
@@ -124,17 +124,25 @@ services:
       - hive-server
       - mysql
     mem_limit: 4g
-
   superset:
-    image: apache/superset:latest
+    image: apache/superset:4.1.2
     container_name: superset
     ports:
       - "8088:8088"
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+          cpus: '4.0'
     environment:
       - SUPERSET_SECRET_KEY=supersecretkey
+      - SUPERSET_ENV=production
+      - MAPBOX_API_KEY=${MAPBOX_API_KEY}
     volumes:
       - ./scripts/init-superset.sh:/app/init-superset.sh
       - ./superset/import_datasources.yaml:/app/import_datasources.yaml
+      - ./superset/superset_home:/app/superset_home
+      - ./superset/uploads:/app/uploads
     depends_on:
       - presto-coordinator
       - mysql

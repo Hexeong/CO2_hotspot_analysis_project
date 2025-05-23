@@ -1,2 +1,5 @@
 /dataset/
 /hadoop_cluster/mysql_data/
+/hadoop_cluster/superset/superset_home/
+/hadoop_cluster/superset/uploads/
+/hadoop_cluster/.env
