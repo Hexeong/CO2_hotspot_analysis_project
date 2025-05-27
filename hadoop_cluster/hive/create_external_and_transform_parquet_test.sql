@@ -32,4 +32,32 @@ LOCATION '/user/hive/warehouse/dataset';
 CREATE TABLE access_log_test_parquet
 STORED AS PARQUET
 AS
-SELECT * FROM access_log_test_raw;
+SELECT 
+  (CAST(Clat AS DOUBLE) / POWER(2, 32)) * 360 AS Clat,
+  (CAST(Clon AS DOUBLE) / POWER(2, 32)) * 360 AS Clon,
+  Decoding_Feat,
+  Dlat,
+  Dlon,
+  DriveID,
+  Guidance,
+  OP,
+  `Reset`,
+  TP_Apps,
+  TP_SID,
+  Traffic_Mode,
+  Vers,
+  body_bytes,
+  `method`,
+  referrer,
+  response_time,
+  `status`,
+  `timestamp`,
+  uaVers,
+  user_agent
+FROM access_log_test_raw
+WHERE `status` = 200
+AND NOT (
+  DriveID LIKE 'AKAMA%' OR 
+  DriveID LIKE 'MONIT%' OR 
+  DriveID LIKE 'NAVIS%'
+);
