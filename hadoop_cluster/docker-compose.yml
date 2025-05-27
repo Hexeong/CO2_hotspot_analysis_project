@@ -137,10 +137,12 @@ services:
     environment:
       - SUPERSET_SECRET_KEY=supersecretkey
       - SUPERSET_ENV=production
+      - SUPERSET_CONFIG_PATH=/app/pythonpath/superset_config.py # 쿼리 max 시간 설정용
       - MAPBOX_API_KEY=${MAPBOX_API_KEY}
     volumes:
       - ./scripts/init-superset.sh:/app/init-superset.sh
       - ./superset/import_datasources.yaml:/app/import_datasources.yaml
+      - ./superset/superset_config.py:/app/pythonpath/superset_config.py
       - ./superset/superset_home:/app/superset_home
       - ./superset/uploads:/app/uploads
     depends_on:
